@@ -5,6 +5,7 @@ import {
   Container,
   Headers,
   Input,
+  InputReadOnly,
   Label,
   Coluna2,
   Coluna4,
@@ -37,8 +38,8 @@ export default class cotacao extends Component {
               <Coluna2>
                 <Button
                   variant="contained"
-                  color="primary"
                   href="#contained-buttons"
+                  style={{ backgroundColor: "#007bff", color: "#fff" }}
                 >
                   Obter Cotação
                 </Button>
@@ -49,11 +50,14 @@ export default class cotacao extends Component {
             <Linha>
               <Coluna4>
                 <Label>Nome do Corretor</Label>
-                <Input />
+                <InputReadOnly
+                  readOnly="true"
+                  value="PROCULUS ADM. E CORRETORA DE SEGUROS DE VIDA LTDA"
+                />
               </Coluna4>
               <Coluna4>
                 <Label>Código do Corretor</Label>
-                <Input />
+                <InputReadOnly readOnly="true" value="FC0192" />
               </Coluna4>
             </Linha>
             <Linha>
@@ -81,6 +85,7 @@ export default class cotacao extends Component {
               <Coluna4>
                 <Label>Percentual de Agenciamento</Label>
                 <Select>
+                  <option select> </option>
                   <option value="valor1">0%</option>
                   <option value="valor2">100%</option>
                   <option value="valor3">150%</option>
@@ -100,6 +105,7 @@ export default class cotacao extends Component {
               <Coluna4>
                 <Label>Percentual de Agenciamento</Label>
                 <Select>
+                  <option select> </option>
                   <option value="valor1">0%</option>
                   <option value="valor2">100%</option>
                   <option value="valor3">150%</option>
@@ -119,6 +125,7 @@ export default class cotacao extends Component {
               <Coluna4>
                 <Label>Percentual de Agenciamento</Label>
                 <Select>
+                  <option select> </option>
                   <option value="valor1">0%</option>
                   <option value="valor2">100%</option>
                   <option value="valor3">150%</option>
