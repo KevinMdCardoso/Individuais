@@ -21,11 +21,14 @@
     "rules": {
       "react/self-closing-comp":"warn",
       "no-unused-vars":"warn",
+      "react/no-unused-state":"warn",
       "prettier/prettier": "warn",   
       "space-before-function-paren" : "off",
       "import/no-extraneous-dependencies": "off",
       "import/prefer-default-export": "off",
       "no-confusing-arrow": "off",
+      "no-shadow": "off",
+      "no-restricted-syntax": "off",
       "linebreak-style": "off",
       "react/jsx-filename-extension": [0],
         "import/extensions": "off"

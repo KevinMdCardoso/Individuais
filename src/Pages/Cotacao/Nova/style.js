@@ -4,12 +4,10 @@ export const Body = styled.div`
   display: flex;
   color: black;
   font-weight: 400;
-
   padding-top: 15px;
   padding-left: 15px;
   padding-right: 15px;
   max-width: 1140px;
-
   width: 100%;
   margin-right: auto;
   margin-left: auto;
@@ -17,7 +15,6 @@ export const Body = styled.div`
 export const Container = styled.div`
   width: 100%;
 `
-
 export const Headers = styled.div`
   width: 100%;
   background-color: black;
@@ -34,7 +31,7 @@ export const Headers = styled.div`
 export const Input = styled.input`
   display: block;
   width: 70%;
-  height: 25px;
+  height: 38px;
   padding: 6px 12px;
   font-size: 1rem;
   font-weight: 400;
@@ -49,7 +46,7 @@ export const Input = styled.input`
 export const InputReadOnly = styled.input`
   display: block;
   width: 70%;
-  height: 25px;
+  height: 38px;
   padding: 6px 12px;
   font-size: 1rem;
   font-weight: 400;

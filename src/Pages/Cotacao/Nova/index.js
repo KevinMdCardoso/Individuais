@@ -17,14 +17,67 @@ import {
   Select
 } from "./style"
 import TabelaCotacao from "../../../Components/TableCotacao"
+import Api from "../../../Services/api"
 
 export default class cotacao extends Component {
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = {
+      peculio: [],
+      seguro: [],
+      servico: [],
+      message: "",
+      isLoading: false
+    }
+  }
+
+  componentDidMount() {
+    const peculio = []
+    console.log("grgeata")
+    let seguro = []
+    const servico = []
+    const response = Api.get(`multicalculo/listaplanosativos`).then(
+      response => {
+        console.log(response)
+        for (const plano in response.data) {
+          if (response.data[plano].tipo.nome === "Seguro") {
+            seguro = [...seguro, response.data[plano]]
+          }
+
+          // switch (response.data[plano].tipo.nome) {
+          //   case "Seguro":
+          //     seguro = [...seguro, response.data[plano]]
+          //     break
+          //   case "peculio":
+          //     peculio = [...peculio, response.data[plano]]
+          //     break
+          //   case "servico":
+          //     servico = [...servico, response.data[plano]]
+          //     break
+          // }
+        }
+        this.setState({ peculio, seguro, servico })
+      },
+      error => {
+        if (error === 404) {
+          this.setState({
+            message: "Não foi possível conectar ao banco de dados"
+          })
+          this.setState({ isLoading: false })
+        } else {
+          this.setState({
+            message: "Não foi possível conectar ao banco de dados"
+          })
+          this.setState({ isLoading: false })
+        }
+        // console.log(error)
+      }
+    )
   }
 
   render() {
+    const { seguro } = this.state
+    console.log(seguro)
     return (
       <>
         <Headers>Multicalculo</Headers>
@@ -98,7 +151,10 @@ export default class cotacao extends Component {
               </Coluna4>
             </Linha>
             <Linha>
-              <TabelaCotacao />
+              <TabelaCotacao
+                colunaCapital="Benefício (R$)"
+                colunaPremio="Contribuição (R$)"
+              />
             </Linha>
             <CabecalhoTipoPlano>Seguro</CabecalhoTipoPlano>
             <Linha>
@@ -118,7 +174,10 @@ export default class cotacao extends Component {
               </Coluna4>
             </Linha>
             <Linha>
-              <TabelaCotacao />
+              <TabelaCotacao
+                colunaCapital="Capital Segurado (R$)"
+                colunaPremio="Prêmio (R$)"
+              />
             </Linha>
             <CabecalhoTipoPlano>Serviço</CabecalhoTipoPlano>
             <Linha>
@@ -138,14 +197,17 @@ export default class cotacao extends Component {
               </Coluna4>
             </Linha>
             <Linha>
-              <TabelaCotacao />
+              <TabelaCotacao
+                colunaCapital="Contratar Serviço"
+                colunaPremio="Valor (R$)"
+              />
             </Linha>
             <Linha>
               <Coluna2>
                 <Button
                   variant="contained"
-                  color="primary"
                   href="#contained-buttons"
+                  style={{ backgroundColor: "#007bff", color: "#fff" }}
                 >
                   Calcular
                 </Button>
