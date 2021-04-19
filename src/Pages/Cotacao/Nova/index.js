@@ -1,5 +1,6 @@
 import React, { Component } from "react"
 import Button from "@material-ui/core/Button"
+import InputMask from "react-input-mask"
 import {
   Body,
   Container,
@@ -18,6 +19,7 @@ import {
 } from "./style"
 import TabelaCotacao from "../../../Components/TableCotacao"
 import Api from "../../../Services/api"
+import { cpfMask, numeroMask } from "../../../Components/mask/mask"
 
 export default class cotacao extends Component {
   constructor(props) {
@@ -26,35 +28,73 @@ export default class cotacao extends Component {
       peculio: [],
       seguro: [],
       servico: [],
+      cpfCliente: "",
+      comisaoPeculio: "0%",
+      comisaoSeguro: "0%",
       message: "",
       isLoading: false
     }
+
+    this.handlechangeCpf = this.handlechangeCpf.bind(this)
+    this.handlechangeData = this.handlechangeData.bind(this)
+    this.mostraValor = this.mostraValor.bind(this)
+    this.handlechangeComisaoPeculio = this.handlechangeComisaoPeculio.bind(this)
+    this.handlechangeComisaoSeguro = this.handlechangeComisaoSeguro.bind(this)
+    this.handlechangeAlteraCapital = this.handlechangeAlteraCapital.bind(this)
   }
 
   componentDidMount() {
-    const peculio = []
-    console.log("grgeata")
+    let servico = []
+    let peculio = []
     let seguro = []
-    const servico = []
+
     const response = Api.get(`multicalculo/listaplanosativos`).then(
       response => {
-        console.log(response)
+        // console.log("Retorno:", response.data)
         for (const plano in response.data) {
-          if (response.data[plano].tipo.nome === "Seguro") {
+          if (response.data[plano].tipo.nome === "Serviço") {
+            if (Object.prototype.hasOwnProperty.call(response.data, plano)) {
+              for (const cobertura in response.data[plano].coberturas) {
+                if (
+                  Object.prototype.hasOwnProperty.call(
+                    response.data[plano].coberturas,
+                    cobertura
+                  )
+                ) {
+                  response.data[plano].coberturas[cobertura].mostraValor = false
+                }
+              }
+            }
+            servico = [...servico, response.data[plano]]
+          } else if (response.data[plano].tipo.nome === "Seguro") {
+            if (Object.prototype.hasOwnProperty.call(response.data, plano)) {
+              for (const cobertura in response.data[plano].coberturas) {
+                if (
+                  Object.prototype.hasOwnProperty.call(
+                    response.data[plano].coberturas,
+                    cobertura
+                  )
+                ) {
+                  response.data[plano].coberturas[cobertura].capital = 0
+                }
+              }
+            }
             seguro = [...seguro, response.data[plano]]
+          } else if (response.data[plano].tipo.nome === "Pecúlio") {
+            if (Object.prototype.hasOwnProperty.call(response.data, plano)) {
+              for (const cobertura in response.data[plano].coberturas) {
+                if (
+                  Object.prototype.hasOwnProperty.call(
+                    response.data[plano].coberturas,
+                    cobertura
+                  )
+                ) {
+                  response.data[plano].coberturas[cobertura].capital = 0
+                }
+              }
+            }
+            peculio = [...peculio, response.data[plano]]
           }
-
-          // switch (response.data[plano].tipo.nome) {
-          //   case "Seguro":
-          //     seguro = [...seguro, response.data[plano]]
-          //     break
-          //   case "peculio":
-          //     peculio = [...peculio, response.data[plano]]
-          //     break
-          //   case "servico":
-          //     servico = [...servico, response.data[plano]]
-          //     break
-          // }
         }
         this.setState({ peculio, seguro, servico })
       },
@@ -75,9 +115,97 @@ export default class cotacao extends Component {
     )
   }
 
-  render() {
+  handlechangeCpf(e) {
+    this.setState({ cpfCliente: cpfMask(e.target.value) })
+  }
+
+  handlechangeData(e) {
+    const dataNascimento = new Date(e.target.value)
+    const agora = new Date(Date.now())
+    if (
+      dataNascimento.getFullYear() > 1920 &&
+      dataNascimento.getFullYear() <= agora.getFullYear()
+    ) {
+      let idade = agora.getFullYear() - dataNascimento.getFullYear()
+
+      if (agora.getMonth() < dataNascimento.getMonth()) {
+        idade -= 1
+      } else if (
+        agora.getMonth() === dataNascimento.getMonth() &&
+        agora.getDate() <= dataNascimento.getDate()
+      ) {
+        idade -= 1
+      }
+      this.setState({ dataNascimento, idade })
+    }
+  }
+
+  handlechangeComisaoPeculio(e) {
+    const value = e.target.value.replace("%", "")
+    this.setState({ comisaoPeculio: `${numeroMask(value)}%` })
+  }
+
+  handlechangeComisaoSeguro(e) {
+    const value = e.target.value.replace("%", "")
+    this.setState({ comisaoSeguro: `${numeroMask(value)}%` })
+  }
+
+  handlechangeAlteraCapital(altCobertura, e) {
     const { seguro } = this.state
+
+    for (const plano in seguro) {
+      if (Object.prototype.hasOwnProperty.call(seguro, plano)) {
+        for (const cobertura in seguro[plano].coberturas) {
+          if (
+            Object.prototype.hasOwnProperty.call(
+              seguro[plano].coberturas,
+              cobertura
+            ) &&
+            seguro[plano].coberturas[cobertura].id === altCobertura.id
+          ) {
+            seguro[plano].coberturas[cobertura].capital = `${numeroMask(
+              e.target.value
+            )}`
+          }
+        }
+      }
+    }
     console.log(seguro)
+    this.setState({ seguro })
+  }
+
+  mostraValor(altCobertura) {
+    const { servico } = this.state
+    for (const plano in servico) {
+      if (Object.prototype.hasOwnProperty.call(servico, plano)) {
+        for (const cobertura in servico[plano].coberturas) {
+          if (
+            Object.prototype.hasOwnProperty.call(
+              servico[plano].coberturas,
+              cobertura
+            ) &&
+            servico[plano].coberturas[cobertura].id === altCobertura.id
+          ) {
+            servico[plano].coberturas[cobertura].mostraValor = !servico[plano]
+              .coberturas[cobertura].mostraValor
+          }
+        }
+      }
+    }
+    this.setState({ servico })
+  }
+
+  render() {
+    const {
+      seguro,
+      peculio,
+      servico,
+      cpfCliente,
+      idade,
+      dataNascimento,
+      comisaoPeculio,
+      comisaoSeguro
+    } = this.state
     return (
       <>
         <Headers>Multicalculo</Headers>
@@ -116,21 +244,25 @@ export default class cotacao extends Component {
             <Linha>
               <Coluna4>
                 <Label>Nome</Label>
-                <Input />
+                <Input upper="true" />
               </Coluna4>
               <Coluna4>
                 <Label>CPF</Label>
-                <Input />
+                <Input
+                  maxLength="14"
+                  value={cpfCliente}
+                  onChange={this.handlechangeCpf}
+                />
               </Coluna4>
             </Linha>
             <Linha>
               <Coluna4>
                 <Label>Data de Nascimento</Label>
-                <Input type="date" />
+                <Input type="date" onChange={this.handlechangeData} />
               </Coluna4>
               <Coluna4>
                 <Label>Idade</Label>
-                <Input type="number" />
+                <InputReadOnly type="number" value={idade} />
               </Coluna4>
             </Linha>
             <CabecalhoTipoPlano>Pecúlio</CabecalhoTipoPlano>
@@ -147,13 +279,21 @@ export default class cotacao extends Component {
               </Coluna4>
               <Coluna4>
                 <Label>Percentual de Comissão</Label>
-                <Input />
+                <Input
+                  value={comisaoPeculio}
+                  onChange={this.handlechangeComisaoPeculio}
+                  alinhamentoDireita="true"
+                />
               </Coluna4>
             </Linha>
             <Linha>
               <TabelaCotacao
                 colunaCapital="Benefício (R$)"
                 colunaPremio="Contribuição (R$)"
+                data={peculio}
+                checkBox="false"
+                tipoPlano="Pecúlio"
+                alteraCapital={this.handlechangeAlteraCapital}
               />
             </Linha>
             <CabecalhoTipoPlano>Seguro</CabecalhoTipoPlano>
@@ -170,36 +310,32 @@ export default class cotacao extends Component {
               </Coluna4>
               <Coluna4>
                 <Label>Percentual de Comissão</Label>
-                <Input />
+                <Input
+                  value={comisaoSeguro}
+                  onChange={this.handlechangeComisaoSeguro}
+                  alinhamentoDireita="true"
+                />
               </Coluna4>
             </Linha>
             <Linha>
               <TabelaCotacao
                 colunaCapital="Capital Segurado (R$)"
                 colunaPremio="Prêmio (R$)"
+                data={seguro}
+                checkBox="false"
+                tipoPlano="Seguro"
+                alteraCapital={this.handlechangeAlteraCapital}
               />
             </Linha>
             <CabecalhoTipoPlano>Serviço</CabecalhoTipoPlano>
             <Linha>
-              <Coluna4>
-                <Label>Percentual de Agenciamento</Label>
-                <Select>
-                  <option select> </option>
-                  <option value="valor1">0%</option>
-                  <option value="valor2">100%</option>
-                  <option value="valor3">150%</option>
-                  <option value="valor4">200%</option>
-                </Select>
-              </Coluna4>
-              <Coluna4>
-                <Label>Percentual de Comissão</Label>
-                <Input />
-              </Coluna4>
-            </Linha>
-            <Linha>
               <TabelaCotacao
                 colunaCapital="Contratar Serviço"
                 colunaPremio="Valor (R$)"
+                data={servico}
+                checkBox="true"
+                mostraValor={this.mostraValor}
+                tipoPlano="Serviço"
               />
             </Linha>
             <Linha>

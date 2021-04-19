@@ -42,6 +42,8 @@ export const Input = styled.input`
   border: 1px solid #ced4da;
   border-radius: 0.25rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  text-transform: ${props => (props.upper ? "uppercase" : "none")};
+  text-align: ${props => (props.alinhamentoDireita ? "right" : "left")};
 `
 export const InputReadOnly = styled.input`
   display: block;

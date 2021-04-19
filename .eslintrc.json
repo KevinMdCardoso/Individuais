@@ -30,6 +30,7 @@
       "no-shadow": "off",
       "no-restricted-syntax": "off",
       "linebreak-style": "off",
+      "guard-for-in": "off",
       "react/jsx-filename-extension": [0],
         "import/extensions": "off"
     }
