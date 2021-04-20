@@ -22,20 +22,23 @@ export const cepMask = value => {
     .replace(/^(\d{2})(\d)/, "$1.$2")
     .replace(/\.(\d{3})(\d)/, ".$1-$2")
 }
+export const numeroInteiroMask = value => {
+  return value.replace(/\D/g, "").replace(".", "")
+}
 
 export const numeroMask = value => {
   let numero = value.replace(/\D/g, "").replace(".", "")
-  console.log(value)
+  // console.log(value)
   if (numero < 99999) {
-    numero = numero.replace(/^(\d{1,3})(\d{2})/, "$1.$2")
+    numero = numero.replace(/^(\d{1,3})(\d{2})/, "$1,$2")
   } else if (numero < 99999999) {
-    numero = numero.replace(/^(\d{1,3})(\d{3})(\d{2})/, "$1.$2.$3")
+    numero = numero.replace(/^(\d{1,3})(\d{3})(\d{2})/, "$1.$2,$3")
   } else if (numero < 99999999999) {
-    numero = numero.replace(/^(\d{1,3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3.$4")
+    numero = numero.replace(/^(\d{1,3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3,$4")
   } else {
     numero = numero.replace(
       /^(\d{1,3})(\d{3})(\d{3})(\d{3})(\d{2})/,
-      "$1.$2.$3.$4.$5"
+      "$1.$2.$3.$4,$5"
     )
   }
 

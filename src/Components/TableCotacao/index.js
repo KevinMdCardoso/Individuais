@@ -8,7 +8,7 @@ import Table from "react-bootstrap/Table"
 import React from "react"
 import { makeStyles } from "@material-ui/core/styles"
 import HelpIcon from "@material-ui/icons/Help"
-import { Input } from "./style"
+import { Input, Select } from "./style"
 
 const useStyles = makeStyles({
   table: {
@@ -56,17 +56,46 @@ function sortOrdenacao(a, b) {
 }
 
 export default function TabelaCotacao(props) {
+  const { selecionadoFuneral } = props
   const Planos = props.data
   const rows = []
+  const ordenacoesRepitidas = []
+  const itensAgrupados = []
+  const IndexRemocao = []
   const coberturas = Planos.map(item => separaDoPlano(item.coberturas))
+
   for (const cob in coberturas) {
     if ({}.hasOwnProperty.call(coberturas, cob)) {
       coberturas[cob].map(x => rows.push(x))
     }
   }
-
   rows.sort(sortOrdenacao)
-  // console.log(rows)
+
+  for (const cobert in rows) {
+    const testeOrdenacao = rows.filter(
+      x => x.ordenacao === rows[cobert].ordenacao
+    )
+    if (testeOrdenacao.length > 1) {
+      const auxOrdenador = ordenacoesRepitidas.find(
+        x => x === rows[cobert].ordenacao
+      )
+      if (!(auxOrdenador > 0)) {
+        ordenacoesRepitidas.push(rows[cobert].ordenacao)
+      }
+    }
+  }
+  for (const ordenacao in ordenacoesRepitidas) {
+    itensAgrupados.push(
+      rows.filter(x => x.ordenacao === ordenacoesRepitidas[ordenacao])
+    )
+    for (let i = 0; i < rows.length; i += 1) {
+      if (rows[i].ordenacao === ordenacoesRepitidas[ordenacao]) {
+        rows.splice(i, 1)
+        i -= 1
+      }
+    }
+  }
+
   const classes = useStyles()
   return (
     <div className={classes.table}>
@@ -100,7 +129,7 @@ export default function TabelaCotacao(props) {
                     <Input
                       value={
                         cobertura.capital === 0
-                          ? "0.00"
+                          ? "0,00"
                           : `${cobertura.capital}`
                       }
                       onChange={e => props.alteraCapital(cobertura, e)}
@@ -109,7 +138,9 @@ export default function TabelaCotacao(props) {
                       key="top"
                       placement="top"
                       overlay={
-                        <Tooltip id={`tooltip-${"top"}`}>Tooltip</Tooltip>
+                        <Tooltip id={`tooltip-${"top"}`}>
+                          {cobertura.toolTip}
+                        </Tooltip>
                       }
                     >
                       <HelpIcon style={{ fontSize: 18 }} />
@@ -120,6 +151,46 @@ export default function TabelaCotacao(props) {
                   </td>
                 </>
               )}
+            </tr>
+          ))}
+          {itensAgrupados.map(Coberturas => (
+            <tr key={`${Coberturas.length}funeral`}>
+              <td>
+                <Select onChange={e => props.alteraSelecionado(e, Coberturas)}>
+                  <option select> Funeral </option>
+                  {Coberturas.map((cobertura, index) => (
+                    <option value={index}>{cobertura.nome}</option>
+                  ))}
+                </Select>
+              </td>
+              <td>
+                <Input
+                  value={
+                    Coberturas[selecionadoFuneral].capital === 0
+                      ? "0,00"
+                      : `${Coberturas[selecionadoFuneral].capital}`
+                  }
+                  onChange={e =>
+                    props.alteraCapital(Coberturas[selecionadoFuneral], e)
+                  }
+                />
+                <OverlayTrigger
+                  key="top"
+                  placement="top"
+                  overlay={
+                    <Tooltip id={`tooltip-${"top"}`}>
+                      {Coberturas[selecionadoFuneral].toolTip}
+                    </Tooltip>
+                  }
+                >
+                  <HelpIcon style={{ fontSize: 18 }} />
+                </OverlayTrigger>
+              </td>
+              <td className={classes.alignRight}>
+                {Coberturas[selecionadoFuneral].premio
+                  ? Coberturas[selecionadoFuneral].premio
+                  : "0,00"}
+              </td>
             </tr>
           ))}
         </tbody>
