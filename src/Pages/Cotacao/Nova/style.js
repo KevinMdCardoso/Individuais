@@ -77,6 +77,16 @@ export const Select = styled.select`
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 `
 
+export const Coluna = styled.div`
+  padding-right: 5px;
+  padding-left: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: baseline;
+  margin-bottom: 16px;
+`
+
 export const Coluna2 = styled.div`
   width: 16.66%;
   padding-right: 5px;

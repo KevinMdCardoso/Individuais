@@ -38,7 +38,8 @@ const useStyles = makeStyles({
   alignRight: {
     textAlign: "right",
     fontWeight: "700"
-  }
+  },
+  alignRightVerde: { textAlign: "right", fontWeight: "700", color: "#3c763d" }
 })
 
 function separaDoPlano(coberturas) {
@@ -119,9 +120,13 @@ export default function TabelaCotacao(props) {
                       onClick={e => props.mostraValor(cobertura)}
                     />
                   </td>
-                  <td className={classes.alignRight}>
-                    {cobertura.mostraValor ? cobertura.premio : "0,00"}
-                  </td>
+                  {cobertura.mostraValor ? (
+                    <td className={classes.alignRightVerde}>
+                      {cobertura.premio}
+                    </td>
+                  ) : (
+                    <td className={classes.alignRight}>0,00</td>
+                  )}
                 </>
               ) : (
                 <>
@@ -146,9 +151,13 @@ export default function TabelaCotacao(props) {
                       <HelpIcon style={{ fontSize: 18 }} />
                     </OverlayTrigger>
                   </td>
-                  <td className={classes.alignRight}>
-                    {cobertura.premio ? cobertura.premio : "0,00"}
-                  </td>
+                  {cobertura.premio ? (
+                    <td className={classes.alignRightVerde}>
+                      {cobertura.premio}
+                    </td>
+                  ) : (
+                    <td className={classes.alignRight}>0,00</td>
+                  )}
                 </>
               )}
             </tr>
@@ -186,11 +195,13 @@ export default function TabelaCotacao(props) {
                   <HelpIcon style={{ fontSize: 18 }} />
                 </OverlayTrigger>
               </td>
-              <td className={classes.alignRight}>
-                {Coberturas[selecionadoFuneral].premio
-                  ? Coberturas[selecionadoFuneral].premio
-                  : "0,00"}
-              </td>
+              {Coberturas[selecionadoFuneral].premio ? (
+                <td className={classes.alignRightVerde}>
+                  {Coberturas[selecionadoFuneral].premio}
+                </td>
+              ) : (
+                <td className={classes.alignRight}>0,00</td>
+              )}
             </tr>
           ))}
         </tbody>

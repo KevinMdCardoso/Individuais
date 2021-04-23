@@ -8,6 +8,7 @@ import {
   Input,
   InputReadOnly,
   Label,
+  Coluna,
   Coluna2,
   Coluna4,
   Linha,
@@ -18,6 +19,7 @@ import {
   Select
 } from "./style"
 import TabelaCotacao from "../../../Components/TableCotacao"
+import TabelaTotalCotacao from "../../../Components/TabelaTotalCotacao"
 import Api from "../../../Services/api"
 import {
   cpfMask,
@@ -33,13 +35,13 @@ export default class cotacao extends Component {
       seguro: [],
       servico: [],
       selecionadoFuneral: 0,
-      cpfCliente: "",
-      nomeCliente: "",
+      cpfCliente: "86299719087",
+      nomeCliente: "KEVIN CARDOSO",
 
-      comisaoPeculio: 0,
-      agenciamentoPeculio: 0,
-      comisaoSeguro: 0,
-      agenciamentoSeguro: 0,
+      comisaoPeculio: 10,
+      agenciamentoPeculio: 100,
+      comisaoSeguro: 25,
+      agenciamentoSeguro: 100,
 
       codigoCorretor: "",
       nomeCorretor: "",
@@ -47,14 +49,33 @@ export default class cotacao extends Component {
       filialCorretor: "",
       documentoCorretor: "",
       numeroSusepCorretor: "",
+
+      premioBruto: 0,
+      premioLiquido: 0,
+      premioMinimo: 0,
+      valorComissaoTotal: 0,
+      valorServico: 0,
+      valorTotal: 0,
+      iof: 0,
+
+      cotacaoCalculada: null,
+
+      dataCotacao: null,
+      numeroCotacao: null,
+      idCotacao: null,
+
       message: "",
-      isLoading: false
+      isLoading: false,
+      isCalculado: false,
+      isGerado: false,
+      isEdicao: true
     }
 
     this.handlechangeCpf = this.handlechangeCpf.bind(this)
     this.handlechangeData = this.handlechangeData.bind(this)
     this.mostraValor = this.mostraValor.bind(this)
     this.calculaCotacao = this.calculaCotacao.bind(this)
+    this.GerarCotacao = this.GerarCotacao.bind(this)
     this.handlechangeComisaoPeculio = this.handlechangeComisaoPeculio.bind(this)
     this.handlechangeComisaoSeguro = this.handlechangeComisaoSeguro.bind(this)
     this.handlechangeAlteraCapital = this.handlechangeAlteraCapital.bind(this)
@@ -74,6 +95,7 @@ export default class cotacao extends Component {
     let servico = []
     let peculio = []
     let seguro = []
+
     const codigoCorretor = "FC0192"
 
     Api.get(`multicalculo/listaplanosativos`).then(
@@ -178,6 +200,8 @@ export default class cotacao extends Component {
         }
       }
     )
+
+    this.setState({ isGerado: false, isCalculado: false, isEdicao: true })
   }
 
   handlechangeAlteraSelecionado(e, coberturas) {
@@ -200,11 +224,11 @@ export default class cotacao extends Component {
         }
       }
     }
-    this.setState({ selecionado: e.target.value })
+    this.setState({ isCalculado: false, selecionado: e.target.value })
   }
 
   handlechangeCpf(e) {
-    this.setState({ cpfCliente: cpfMask(e.target.value) })
+    this.setState({ isCalculado: false, cpfCliente: cpfMask(e.target.value) })
   }
 
   handlechangeData(e) {
@@ -224,26 +248,30 @@ export default class cotacao extends Component {
       ) {
         idade -= 1
       }
-      this.setState({ dataNascimento, idade })
+      this.setState({ isCalculado: false, dataNascimento, idade })
     }
   }
 
   handlechangeComisaoPeculio(e) {
-    const value = e.target.value.replace("%", "")
-    this.setState({ comisaoPeculio: numeroInteiroMask(value) })
+    this.setState({
+      isCalculado: false,
+      comisaoPeculio: numeroInteiroMask(e.target.value.replace("%", ""))
+    })
   }
 
   handlechangeComisaoSeguro(e) {
-    const value = e.target.value.replace("%", "")
-    this.setState({ comisaoSeguro: numeroInteiroMask(value) })
+    this.setState({
+      isCalculado: false,
+      comisaoSeguro: numeroInteiroMask(e.target.value.replace("%", ""))
+    })
   }
 
   handlechangeAgenciamentoPeculio(e) {
-    this.setState({ agenciamentoPeculio: e.target.value })
+    this.setState({ isCalculado: false, agenciamentoPeculio: e.target.value })
   }
 
   handlechangeAgenciamentoSeguro(e) {
-    this.setState({ agenciamentoSeguro: e.target.value })
+    this.setState({ isCalculado: false, agenciamentoSeguro: e.target.value })
   }
 
   handlechangeAlteraCapital(altCobertura, e) {
@@ -284,11 +312,14 @@ export default class cotacao extends Component {
         }
       }
     }
-    this.setState({ seguro })
+    this.setState({ isCalculado: false, seguro })
   }
 
   handlechangeNomeCliente(e) {
-    this.setState({ nomeCliente: e.target.value.toUpperCase() })
+    this.setState({
+      isCalculado: false,
+      nomeCliente: e.target.value.toUpperCase()
+    })
   }
 
   calculaCotacao() {
@@ -325,10 +356,22 @@ export default class cotacao extends Component {
       for (const cobertura in seguro[plano].coberturas) {
         if (seguro[plano].coberturas[cobertura].capital) {
           const auxCobertura = seguro[plano].coberturas[cobertura]
-          auxCobertura.plano = seguro[plano]
+          auxCobertura.plano = {
+            apolice: seguro[plano].apolice,
+            ativo: seguro[plano].ativo,
+            id: seguro[plano].id,
+            nome: seguro[plano].nome,
+            ramo: seguro[plano].ramo,
+            sub: seguro[plano].sub,
+            tipo: seguro[plano].tipo,
+            tipo_plano_id: seguro[plano].tipo_plano_id
+          }
+
           cotacaoCobertura.push({
             cobertura_id: seguro[plano].coberturas[cobertura].id,
-            capital: seguro[plano].coberturas[cobertura].capital,
+            capital: seguro[plano].coberturas[cobertura].capital
+              .replace(".", "")
+              .replace(",", "."),
             cobertura: auxCobertura,
             cotacao_plano_valor: planoValor
           })
@@ -347,10 +390,21 @@ export default class cotacao extends Component {
       for (const cobertura in peculio[plano].coberturas) {
         if (peculio[plano].coberturas[cobertura].capital) {
           const auxCobertura = peculio[plano].coberturas[cobertura]
-          auxCobertura.plano = peculio[plano]
+          auxCobertura.plano = {
+            apolice: peculio[plano].apolice,
+            ativo: peculio[plano].ativo,
+            id: peculio[plano].id,
+            nome: peculio[plano].nome,
+            ramo: peculio[plano].ramo,
+            sub: peculio[plano].sub,
+            tipo: peculio[plano].tipo,
+            tipo_plano_id: peculio[plano].tipo_plano_id
+          }
           cotacaoCobertura.push({
             cobertura_id: peculio[plano].coberturas[cobertura].id,
-            capital: peculio[plano].coberturas[cobertura].capital,
+            capital: peculio[plano].coberturas[cobertura].capital
+              .replace(".", "")
+              .replace(",", "."),
             cobertura: auxCobertura,
             cotacao_plano_valor: planoValor
           })
@@ -358,7 +412,31 @@ export default class cotacao extends Component {
       }
     }
 
-    const json = {
+    for (const plano in servico) {
+      for (const cobertura in servico[plano].coberturas) {
+        console.log(servico[plano].coberturascobertura)
+        if (servico[plano].coberturas[cobertura].mostraValor) {
+          const auxCobertura = servico[plano].coberturas[cobertura]
+          auxCobertura.plano = {
+            apolice: servico[plano].apolice,
+            ativo: servico[plano].ativo,
+            id: servico[plano].id,
+            nome: servico[plano].nome,
+            ramo: servico[plano].ramo,
+            sub: servico[plano].sub,
+            tipo: servico[plano].tipo,
+            tipo_plano_id: servico[plano].tipo_plano_id
+          }
+          cotacaoCobertura.push({
+            cobertura_id: servico[plano].coberturas[cobertura].id,
+            premio: servico[plano].coberturas[cobertura].premio,
+            cobertura: auxCobertura
+          })
+        }
+      }
+    }
+
+    Api.post("multicalculo/calculapremio", {
       codigo_corretor: codigoCorretor,
       filial_corretor: filialCorretor,
       nome_corretor: nomeCorretor,
@@ -378,9 +456,106 @@ export default class cotacao extends Component {
       valor_total: 0,
       premio_minimo: 0,
       cotacao_cobertura: cotacaoCobertura
-    }
+    }).then(
+      response => {
+        if (response.data) {
+          // Percorre todas as coberturas calculadas e preenche no objeto.
+          for (const coberturaCalculada in response.data.cotacao_cobertura) {
+            for (const plano in peculio) {
+              for (const cobertura in peculio[plano].coberturas) {
+                if (
+                  peculio[plano].coberturas[cobertura].id ===
+                  response.data.cotacao_cobertura[coberturaCalculada]
+                    .cobertura_id
+                ) {
+                  peculio[plano].coberturas[cobertura].premio =
+                    response.data.cotacao_cobertura[coberturaCalculada].premio
+                }
+              }
+            }
+            for (const plano in seguro) {
+              for (const cobertura in seguro[plano].coberturas) {
+                if (
+                  seguro[plano].coberturas[cobertura].id ===
+                  response.data.cotacao_cobertura[coberturaCalculada]
+                    .cobertura_id
+                ) {
+                  seguro[plano].coberturas[cobertura].premio =
+                    response.data.cotacao_cobertura[coberturaCalculada].premio
+                }
+              }
+            }
+          }
 
-    console.log(json)
+          this.setState({
+            isCalculado: true,
+            premioBruto: response.data.premio_bruto,
+            premioLiquido: response.data.premio_liquido,
+            premioMinimo: response.data.premio_minimo,
+            iof: response.data.iof,
+            valorServico: response.data.valor_servico,
+            valorTotal: response.data.valor_total,
+            valorComissaoTotal: response.data.valor_comissao_total,
+            cotacaoCalculada: response.data
+          })
+        }
+      },
+      error => {
+        if (error === 404) {
+          console.log(error)
+        } else {
+          console.log(error)
+        }
+      }
+    )
+  }
+
+  GerarCotacao() {
+    const { cotacaoCalculada } = this.state
+
+    console.log(cotacaoCalculada)
+    Api.post("multicalculo/criacotacao", {
+      codigo_corretor: cotacaoCalculada.codigo_corretor,
+      filial_corretor: cotacaoCalculada.filial_corretor,
+      nome_corretor: cotacaoCalculada.nome_corretor,
+      email_corretor: cotacaoCalculada.email_corretor,
+      nro_susep_corretor: cotacaoCalculada.nro_susep_corretor,
+      documento_corretor: cotacaoCalculada.documento_corretor,
+      idade: cotacaoCalculada.idade,
+      data_nascimento: cotacaoCalculada.data_nascimento,
+      data_cotacao: cotacaoCalculada.data_cotacao,
+      nome_cliente: cotacaoCalculada.nome_cliente,
+      cpf_cliente: cotacaoCalculada.cpf_cliente,
+      premio_liquido: cotacaoCalculada.premio_liquido,
+      iof: cotacaoCalculada.iof,
+      premio_bruto: cotacaoCalculada.premio_bruto,
+      valor_servico: cotacaoCalculada.valor_servico,
+      valor_comissao_total: cotacaoCalculada.valor_comissao_total,
+      valor_total: cotacaoCalculada.valor_total,
+      premio_minimo: cotacaoCalculada.premio_minimo,
+      cotacao_cobertura: cotacaoCalculada.cotacao_cobertura
+    }).then(
+      response => {
+        if (response.data) {
+          console.log(response.data)
+          this.setState({
+            dataCotacao: response.data.data_cotacao,
+            numeroCotacao: response.data.numero_cotacao,
+            idCotacao: response.data.id,
+            isGerado: true,
+            isCalculado: false,
+            isEdicao: false
+          })
+        }
+      },
+      error => {
+        if (error === 404) {
+          console.log(error)
+        } else {
+          console.log(error)
+        }
+      }
+    )
   }
 
   mostraValor(altCobertura) {
@@ -401,7 +576,7 @@ export default class cotacao extends Component {
         }
       }
     }
-    this.setState({ servico })
+    this.setState({ isCalculado: false, servico })
   }
 
   pegaMsgTooltip(cobertura) {
@@ -453,7 +628,20 @@ export default class cotacao extends Component {
       comisaoSeguro,
       selecionadoFuneral,
       codigoCorretor,
-      nomeCorretor
+      nomeCorretor,
+      premioBruto,
+      premioLiquido,
+      premioMinimo,
+      valorComissaoTotal,
+      valorServico,
+      valorTotal,
+      iof,
+      isCalculado,
+      isEdicao,
+      isGerado,
+      dataCotacao,
+      numeroCotacao,
+      idCotacao
     } = this.state
     return (
       <>
@@ -477,6 +665,21 @@ export default class cotacao extends Component {
             </Linha>
             <Risco />
             <CabecalhoForm>Cálculo de Cotação</CabecalhoForm>
+            {isGerado === true ? (
+              <Linha>
+                <Coluna4>
+                  <Label>Número da Cotação</Label>
+                  <InputReadOnly readOnly="true" value={numeroCotacao} />
+                </Coluna4>
+                <Coluna4>
+                  <Label>Data da Cotação</Label>
+                  <InputReadOnly readOnly="true" value={dataCotacao} />
+                </Coluna4>
+              </Linha>
+            ) : (
+              ""
+            )}
+
             <Linha>
               <Coluna4>
                 <Label>Nome do Corretor</Label>
@@ -590,17 +793,85 @@ export default class cotacao extends Component {
                 tipoPlano="Serviço"
               />
             </Linha>
+
+            {isCalculado ? (
+              <Linha>
+                <TabelaTotalCotacao
+                  premioLiquido={premioLiquido}
+                  Iof={iof}
+                  premioBruto={premioBruto}
+                  valorServico={valorServico}
+                  valorComissao={valorComissaoTotal}
+                  valorTotal={valorTotal}
+                />
+              </Linha>
+            ) : (
+              ""
+            )}
             <Linha>
-              <Coluna2>
-                <Button
-                  variant="contained"
-                  href="#contained-buttons"
-                  style={{ backgroundColor: "#007bff", color: "#fff" }}
-                  onClick={this.calculaCotacao}
-                >
-                  Calcular
-                </Button>
-              </Coluna2>
+              {isEdicao === true ? (
+                <Coluna>
+                  <Button
+                    variant="contained"
+                    href="#contained-buttons"
+                    style={{ backgroundColor: "#007bff", color: "#fff" }}
+                    onClick={this.calculaCotacao}
+                  >
+                    Calcular
+                  </Button>
+                </Coluna>
+              ) : (
+                ""
+              )}
+
+              {isCalculado === true ? (
+                <Coluna>
+                  <Button
+                    variant="contained"
+                    href="#contained-buttons"
+                    style={{ backgroundColor: "#6c757d", color: "#fff" }}
+                    onClick={this.GerarCotacao}
+                  >
+                    Gerar Cotação
+                  </Button>
+                </Coluna>
+              ) : (
+                ""
+              )}
+
+              {isGerado === true ? (
+                <>
+                  <Coluna>
+                    <Button
+                      variant="contained"
+                      href="#contained-buttons"
+                      style={{ backgroundColor: "#007bff", color: "#fff" }}
+                    >
+                      Gerar Proposta
+                    </Button>
+                  </Coluna>
+                  <Coluna>
+                    <Button
+                      variant="contained"
+                      href="#contained-buttons"
+                      style={{ backgroundColor: "#6c757d", color: "#fff" }}
+                    >
+                      Editar Cotação
+                    </Button>
+                  </Coluna>
+                  <Coluna>
+                    <Button
+                      variant="contained"
+                      href="#contained-buttons"
+                      style={{ backgroundColor: "#28a745", color: "#fff" }}
+                    >
+                      Imprimir
+                    </Button>
+                  </Coluna>
+                </>
+              ) : (
+                ""
+              )}
             </Linha>
           </Container>
         </Body>
