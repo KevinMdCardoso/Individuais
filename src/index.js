@@ -1,11 +1,12 @@
 import React from "react"
 import ReactDOM from "react-dom"
 import "./index.css"
-import App from "./Pages/Cotacao/Nova"
+import { Link } from "react-router-dom"
+import Routes from "./routes"
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Routes />
   </React.StrictMode>,
   document.getElementById("root")
 )

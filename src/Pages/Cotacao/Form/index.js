@@ -1,21 +1,26 @@
 import React, { Component } from "react"
-import Button from "@material-ui/core/Button"
+// import Button from "@material-ui/core/Button"
+import "bootstrap/dist/css/bootstrap.min.css"
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+  FormControl,
+  Media
+} from "react-bootstrap"
 import InputMask from "react-input-mask"
 import {
   Body,
-  Container,
+  // Container,
   Headers,
   Input,
   InputReadOnly,
   Label,
-  Coluna,
-  Coluna2,
-  Coluna4,
-  Linha,
   Risco,
   CabecalhoForm,
   CabecalhoTipoPlano,
-  Negrito,
   Select
 } from "./style"
 import TabelaCotacao from "../../../Components/TableCotacao"
@@ -41,7 +46,7 @@ export default class cotacao extends Component {
       comisaoPeculio: 10,
       agenciamentoPeculio: 100,
       comisaoSeguro: 25,
-      agenciamentoSeguro: 100,
+      agenciamentoSeguro: 150,
 
       codigoCorretor: "",
       nomeCorretor: "",
@@ -356,7 +361,7 @@ export default class cotacao extends Component {
       for (const cobertura in seguro[plano].coberturas) {
         if (seguro[plano].coberturas[cobertura].capital) {
           const auxCobertura = seguro[plano].coberturas[cobertura]
-          auxCobertura.plano = {
+          const auxPlano = {
             apolice: seguro[plano].apolice,
             ativo: seguro[plano].ativo,
             id: seguro[plano].id,
@@ -367,13 +372,17 @@ export default class cotacao extends Component {
             tipo_plano_id: seguro[plano].tipo_plano_id
           }
 
+          auxCobertura.plano = auxPlano
+
           cotacaoCobertura.push({
             cobertura_id: seguro[plano].coberturas[cobertura].id,
             capital: seguro[plano].coberturas[cobertura].capital
               .replace(".", "")
               .replace(",", "."),
             cobertura: auxCobertura,
-            cotacao_plano_valor: planoValor
+            cotacao_plano_valor: planoValor,
+            plano: auxPlano,
+            plano_id: auxPlano.id
           })
         }
       }
@@ -390,7 +399,7 @@ export default class cotacao extends Component {
       for (const cobertura in peculio[plano].coberturas) {
         if (peculio[plano].coberturas[cobertura].capital) {
           const auxCobertura = peculio[plano].coberturas[cobertura]
-          auxCobertura.plano = {
+          const auxPlano = {
             apolice: peculio[plano].apolice,
             ativo: peculio[plano].ativo,
             id: peculio[plano].id,
@@ -400,24 +409,33 @@ export default class cotacao extends Component {
             tipo: peculio[plano].tipo,
             tipo_plano_id: peculio[plano].tipo_plano_id
           }
+          auxCobertura.plano = auxPlano
           cotacaoCobertura.push({
             cobertura_id: peculio[plano].coberturas[cobertura].id,
             capital: peculio[plano].coberturas[cobertura].capital
               .replace(".", "")
               .replace(",", "."),
             cobertura: auxCobertura,
-            cotacao_plano_valor: planoValor
+            cotacao_plano_valor: planoValor,
+            plano: auxPlano,
+            plano_id: auxPlano.id
           })
         }
       }
     }
 
     for (const plano in servico) {
+      const planoValor = {
+        premio_liquido: 0,
+        iof: 0,
+        premio_bruto: 0,
+        agenciamento: 0,
+        comissao: 0
+      }
       for (const cobertura in servico[plano].coberturas) {
-        console.log(servico[plano].coberturascobertura)
         if (servico[plano].coberturas[cobertura].mostraValor) {
           const auxCobertura = servico[plano].coberturas[cobertura]
-          auxCobertura.plano = {
+          const auxPlano = {
             apolice: servico[plano].apolice,
             ativo: servico[plano].ativo,
             id: servico[plano].id,
@@ -427,10 +445,14 @@ export default class cotacao extends Component {
             tipo: servico[plano].tipo,
             tipo_plano_id: servico[plano].tipo_plano_id
           }
+          auxCobertura.plano = auxPlano
           cotacaoCobertura.push({
             cobertura_id: servico[plano].coberturas[cobertura].id,
             premio: servico[plano].coberturas[cobertura].premio,
-            cobertura: auxCobertura
+            cobertura: auxCobertura,
+            cotacao_plano_valor: planoValor,
+            plano: auxPlano,
+            plano_id: auxPlano.id
           })
         }
       }
@@ -626,12 +648,13 @@ export default class cotacao extends Component {
       idade,
       comisaoPeculio,
       comisaoSeguro,
+      agenciamentoPeculio,
+      agenciamentoSeguro,
       selecionadoFuneral,
       codigoCorretor,
       nomeCorretor,
       premioBruto,
       premioLiquido,
-      premioMinimo,
       valorComissaoTotal,
       valorServico,
       valorTotal,
@@ -640,177 +663,175 @@ export default class cotacao extends Component {
       isEdicao,
       isGerado,
       dataCotacao,
-      numeroCotacao,
-      idCotacao
+      numeroCotacao
     } = this.state
+
+    const width = window.innerWidth
+
+    const styles = {
+      container: isRowBased => ({
+        paddingTop: "15px",
+        paddingLeft: "15px",
+        paddingRight: "15px",
+        marginRight: "auto",
+        marginReft: "auto"
+      })
+    }
+
     return (
       <>
-        <Headers>Multicalculo</Headers>
-        <Body>
-          <Container>
-            <Linha>
-              <Coluna4>
-                <Label>Buscar Cotação por Número</Label>
-                <Input type="number" />
-              </Coluna4>
-              <Coluna2>
-                <Button
-                  variant="contained"
-                  href="#contained-buttons"
-                  style={{ backgroundColor: "#007bff", color: "#fff" }}
-                >
+        <Container style={{ marginBottom: "20px" }}>
+          <Form style={styles.container(true)} className="body-content">
+            <Form.Row>
+              <Col md={4}>
+                <Form.Label>Buscar Cotação por Número</Form.Label>
+                <Form.Control type="number" placeholder="Número da Cotação" />
+              </Col>
+              <Col md={2}>
+                <Button variant="primary" style={{ marginTop: "31px" }}>
                   Obter Cotação
                 </Button>
-              </Coluna2>
-            </Linha>
+              </Col>
+            </Form.Row>
             <Risco />
             <CabecalhoForm>Cálculo de Cotação</CabecalhoForm>
             {isGerado === true ? (
-              <Linha>
-                <Coluna4>
-                  <Label>Número da Cotação</Label>
-                  <InputReadOnly readOnly="true" value={numeroCotacao} />
-                </Coluna4>
-                <Coluna4>
-                  <Label>Data da Cotação</Label>
-                  <InputReadOnly readOnly="true" value={dataCotacao} />
-                </Coluna4>
-              </Linha>
+              <Form.Row style={{ marginBottom: "16px" }}>
+                <Col md={4}>
+                  <Form.Label>Número da Cotação</Form.Label>
+                  <Form.Control readOnly="true" value={numeroCotacao} />
+                </Col>
+                <Col md={4}>
+                  <Form.Label>Data da Cotação</Form.Label>
+                  <Form.Control readOnly="true" value={dataCotacao} />
+                </Col>
+              </Form.Row>
             ) : (
               ""
             )}
-
-            <Linha>
-              <Coluna4>
-                <Label>Nome do Corretor</Label>
-                <InputReadOnly readOnly="true" value={nomeCorretor} />
-              </Coluna4>
-              <Coluna4>
-                <Label>Código do Corretor</Label>
-                <InputReadOnly readOnly="true" value={codigoCorretor} />
-              </Coluna4>
-            </Linha>
-            <Linha>
-              <Coluna4>
-                <Label>Nome</Label>
-                <Input
+            <Form.Row style={{ marginBottom: "16px" }}>
+              <Col md={4}>
+                <Form.Label>Nome do Corretor</Form.Label>
+                <Form.Control readOnly="true" value={nomeCorretor} />
+              </Col>
+              <Col md={4}>
+                <Form.Label>Código do Corretor</Form.Label>
+                <Form.Control readOnly="true" value={codigoCorretor} />
+              </Col>
+            </Form.Row>
+            <Form.Row style={{ marginBottom: "16px" }}>
+              <Col md={4}>
+                <Form.Label>Nome </Form.Label>
+                <Form.Control
                   upper="true"
                   value={nomeCliente}
                   onChange={this.handlechangeNomeCliente}
+                  readOnly={isGerado}
                 />
-              </Coluna4>
-              <Coluna4>
-                <Label>CPF</Label>
-                <Input
+              </Col>
+              <Col md={4}>
+                <Form.Label>CPF</Form.Label>
+                <Form.Control
                   maxLength="14"
                   value={cpfCliente}
                   onChange={this.handlechangeCpf}
+                  readOnly={isGerado}
                 />
-              </Coluna4>
-            </Linha>
-            <Linha>
-              <Coluna4>
-                <Label>Data de Nascimento</Label>
-                <Input type="date" onChange={this.handlechangeData} />
-              </Coluna4>
-              <Coluna4>
-                <Label>Idade</Label>
-                <InputReadOnly type="number" value={idade} />
-              </Coluna4>
-            </Linha>
-            <CabecalhoTipoPlano>Pecúlio</CabecalhoTipoPlano>
-            <Linha>
-              <Coluna4>
-                <Label>Percentual de Agenciamento</Label>
-                <Select onChange={this.handlechangeAgenciamentoPeculio}>
-                  <option select> </option>
-                  <option value="0">0%</option>
-                  <option value="100">100%</option>
-                  <option value="150">150%</option>
-                  <option value="200">200%</option>
-                </Select>
-              </Coluna4>
-              <Coluna4>
-                <Label>Percentual de Comissão</Label>
-                <Input
-                  value={`${comisaoPeculio}%`}
-                  onChange={this.handlechangeComisaoPeculio}
-                  alinhamentoDireita="true"
+              </Col>
+            </Form.Row>
+            <Form.Row style={{ marginBottom: "16px" }}>
+              <Col md={4}>
+                <Form.Label>Data de Nascimento</Form.Label>
+                <Form.Control
+                  type="date"
+                  onChange={this.handlechangeData}
+                  readOnly={isGerado}
                 />
-              </Coluna4>
-            </Linha>
-            <Linha>
-              <TabelaCotacao
-                colunaCapital="Benefício (R$)"
-                colunaPremio="Contribuição (R$)"
-                data={peculio}
-                checkBox="false"
-                tipoPlano="Pecúlio"
-                alteraCapital={this.handlechangeAlteraCapital}
-              />
-            </Linha>
-            <CabecalhoTipoPlano>Seguro</CabecalhoTipoPlano>
-            <Linha>
-              <Coluna4>
-                <Label>Percentual de Agenciamento</Label>
-                <Select onChange={this.handlechangeAgenciamentoSeguro}>
-                  <option select> </option>
-                  <option value="0">0%</option>
-                  <option value="100">100%</option>
-                  <option value="150">150%</option>
-                  <option value="200">200%</option>
-                </Select>
-              </Coluna4>
-              <Coluna4>
-                <Label>Percentual de Comissão</Label>
-                <Input
-                  value={`${comisaoSeguro}%`}
-                  onChange={this.handlechangeComisaoSeguro}
-                  alinhamentoDireita="true"
+              </Col>
+              <Col md={4}>
+                <Form.Label>Idade</Form.Label>
+                <Form.Control readOnly="true" type="number" value={idade} />
+              </Col>
+            </Form.Row>
+            <Form.Row>
+              <Col md={12}>
+                <TabelaCotacao
+                  NomeTipoPlano="Pecúlio"
+                  colunaCapital="Benefício (R$)"
+                  colunaPremio="Contribuição (R$)"
+                  data={peculio}
+                  checkBox="false"
+                  tipoPlano="Pecúlio"
+                  alteraCapital={this.handlechangeAlteraCapital}
+                  isGerado={isGerado}
+                  handlechangeAgenciamento={
+                    this.handlechangeAgenciamentoPeculio
+                  }
+                  handlechangeComisao={this.handlechangeComisaoPeculio}
+                  comisao={comisaoPeculio}
+                  agenciamento={agenciamentoPeculio}
                 />
-              </Coluna4>
-            </Linha>
-            <Linha>
-              <TabelaCotacao
-                colunaCapital="Capital Segurado (R$)"
-                colunaPremio="Prêmio (R$)"
-                data={seguro}
-                checkBox="false"
-                tipoPlano="Seguro"
-                alteraCapital={this.handlechangeAlteraCapital}
-                alteraSelecionado={this.handlechangeAlteraSelecionado}
-                selecionadoFuneral={selecionadoFuneral}
-              />
-            </Linha>
-            <CabecalhoTipoPlano>Serviço</CabecalhoTipoPlano>
-            <Linha>
-              <TabelaCotacao
-                colunaCapital="Contratar Serviço"
-                colunaPremio="Valor (R$)"
-                data={servico}
-                checkBox="true"
-                mostraValor={this.mostraValor}
-                tipoPlano="Serviço"
-              />
-            </Linha>
+              </Col>
+            </Form.Row>
+            <Form.Row>
+              <Col md={12}>
+                <TabelaCotacao
+                  NomeTipoPlano="Seguro"
+                  colunaCapital="Capital Segurado (R$)"
+                  colunaPremio="Prêmio (R$)"
+                  data={seguro}
+                  checkBox="false"
+                  tipoPlano="Seguro"
+                  alteraCapital={this.handlechangeAlteraCapital}
+                  alteraSelecionado={this.handlechangeAlteraSelecionado}
+                  selecionadoFuneral={selecionadoFuneral}
+                  isGerado={isGerado}
+                  handlechangeAgenciamento={this.handlechangeAgenciamentoSeguro}
+                  handlechangeComisao={this.handlechangeComisaoSeguro}
+                  comisao={comisaoSeguro}
+                  agenciamento={agenciamentoSeguro}
+                />
+              </Col>
+            </Form.Row>
+            <Form.Row>
+              <Col md={12}>
+                <TabelaCotacao
+                  NomeTipoPlano="Serviço"
+                  colunaCapital="Contratar Serviço"
+                  colunaPremio="Valor (R$)"
+                  data={servico}
+                  checkBox="true"
+                  mostraValor={this.mostraValor}
+                  tipoPlano="Serviço"
+                  isGerado={isGerado}
+                  // handlechangeAgenciamento={this.handlechangeAgenciamentoSeguro}
+                  // handlechangeComisao={this.handlechangeComisaoSeguro}
+                  // comisao={comisaoSeguro}
+                  // agenciamento={agenciamentoPeculio}
+                />
+              </Col>
+            </Form.Row>
 
-            {isCalculado ? (
-              <Linha>
-                <TabelaTotalCotacao
-                  premioLiquido={premioLiquido}
-                  Iof={iof}
-                  premioBruto={premioBruto}
-                  valorServico={valorServico}
-                  valorComissao={valorComissaoTotal}
-                  valorTotal={valorTotal}
-                />
-              </Linha>
+            {isCalculado || isGerado ? (
+              <Form.Row>
+                <Col md={12}>
+                  <TabelaTotalCotacao
+                    premioLiquido={premioLiquido}
+                    Iof={iof}
+                    premioBruto={premioBruto}
+                    valorServico={valorServico}
+                    valorComissao={valorComissaoTotal}
+                    valorTotal={valorTotal}
+                  />
+                </Col>
+              </Form.Row>
             ) : (
               ""
             )}
-            <Linha>
+
+            <Form.Row>
               {isEdicao === true ? (
-                <Coluna>
+                <Col md={1}>
                   <Button
                     variant="contained"
                     href="#contained-buttons"
@@ -819,13 +840,13 @@ export default class cotacao extends Component {
                   >
                     Calcular
                   </Button>
-                </Coluna>
+                </Col>
               ) : (
                 ""
               )}
 
               {isCalculado === true ? (
-                <Coluna>
+                <Col md={2}>
                   <Button
                     variant="contained"
                     href="#contained-buttons"
@@ -834,14 +855,14 @@ export default class cotacao extends Component {
                   >
                     Gerar Cotação
                   </Button>
-                </Coluna>
+                </Col>
               ) : (
                 ""
               )}
 
               {isGerado === true ? (
                 <>
-                  <Coluna>
+                  <Col md={2}>
                     <Button
                       variant="contained"
                       href="#contained-buttons"
@@ -849,8 +870,8 @@ export default class cotacao extends Component {
                     >
                       Gerar Proposta
                     </Button>
-                  </Coluna>
-                  <Coluna>
+                  </Col>
+                  <Col md={2}>
                     <Button
                       variant="contained"
                       href="#contained-buttons"
@@ -858,8 +879,8 @@ export default class cotacao extends Component {
                     >
                       Editar Cotação
                     </Button>
-                  </Coluna>
-                  <Coluna>
+                  </Col>
+                  <Col md={2}>
                     <Button
                       variant="contained"
                       href="#contained-buttons"
@@ -867,14 +888,14 @@ export default class cotacao extends Component {
                     >
                       Imprimir
                     </Button>
-                  </Coluna>
+                  </Col>
                 </>
               ) : (
                 ""
               )}
-            </Linha>
-          </Container>
-        </Body>
+            </Form.Row>
+          </Form>
+        </Container>
       </>
     )
   }

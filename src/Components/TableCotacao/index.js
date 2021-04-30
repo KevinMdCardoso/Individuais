@@ -3,18 +3,23 @@
 /* eslint-disable-next-line react/prop-types */
 
 import "bootstrap/dist/css/bootstrap.min.css"
-import { OverlayTrigger, Tooltip, Button, InputGroup } from "react-bootstrap"
+
+import {
+  OverlayTrigger,
+  Tooltip,
+  Button,
+  InputGroup,
+  Row,
+  Col,
+  Form
+} from "react-bootstrap"
 import Table from "react-bootstrap/Table"
 import React from "react"
 import { makeStyles } from "@material-ui/core/styles"
 import HelpIcon from "@material-ui/icons/Help"
-import { Input, Select } from "./style"
+import { Input, Select, CabecalhoTipoPlano } from "./style"
 
 const useStyles = makeStyles({
-  table: {
-    width: "100%"
-    // borderTop: "1px solid #dee2e6"
-  },
   headerName: {
     width: "32.8%",
     fontWeight: "bold",
@@ -65,11 +70,20 @@ export default function TabelaCotacao(props) {
   const IndexRemocao = []
   const coberturas = Planos.map(item => separaDoPlano(item.coberturas))
 
-  for (const cob in coberturas) {
-    if ({}.hasOwnProperty.call(coberturas, cob)) {
-      coberturas[cob].map(x => rows.push(x))
+  if (props.isGerado) {
+    for (const cob in coberturas) {
+      if ({}.hasOwnProperty.call(coberturas, cob)) {
+        coberturas[cob].map(x => (x.capital ? rows.push(x) : ""))
+      }
+    }
+  } else {
+    for (const cob in coberturas) {
+      if ({}.hasOwnProperty.call(coberturas, cob)) {
+        coberturas[cob].map(x => rows.push(x))
+      }
     }
   }
+
   rows.sort(sortOrdenacao)
 
   for (const cobert in rows) {
@@ -85,6 +99,7 @@ export default function TabelaCotacao(props) {
       }
     }
   }
+
   for (const ordenacao in ordenacoesRepitidas) {
     itensAgrupados.push(
       rows.filter(x => x.ordenacao === ordenacoesRepitidas[ordenacao])
@@ -97,10 +112,60 @@ export default function TabelaCotacao(props) {
     }
   }
 
+  if (rows.length === 0) {
+    return <></>
+  }
+
   const classes = useStyles()
   return (
-    <div className={classes.table}>
-      <Table responsive="md">
+    <>
+      <CabecalhoTipoPlano>{props.NomeTipoPlano}</CabecalhoTipoPlano>
+      {props.NomeTipoPlano !== "Serviço" ? (
+        <Form.Row style={{ marginBottom: "20px" }}>
+          <Col md={4}>
+            <Form.Label>Percentual de Agenciamento</Form.Label>
+            <Select
+              onChange={props.handlechangeAgenciamento}
+              style={
+                props.isGerado
+                  ? {
+                      background: "#eee",
+                      pointerEvents: "none",
+                      touchAction: "none"
+                    }
+                  : {}
+              }
+            >
+              <option> </option>
+              <option value="0" selected={props.agenciamento === 0}>
+                0%
+              </option>
+              <option value="100" selected={props.agenciamento === 100}>
+                100%
+              </option>
+              <option value="150" selected={props.agenciamento === 150}>
+                150%
+              </option>
+              <option value="200" selected={props.agenciamento === 200}>
+                200%
+              </option>
+            </Select>
+          </Col>
+          <Col md={4}>
+            <Form.Label>Percentual de Comissão</Form.Label>
+            <Form.Control
+              value={`${props.comisao}%`}
+              onChange={props.handlechangeComisao}
+              readOnly={props.isGerado}
+              style={{ textAlign: "right" }}
+            />
+          </Col>
+        </Form.Row>
+      ) : (
+        ""
+      )}
+
+      <Table>
         <thead>
           <tr>
             <th className={classes.headerName}>Nome</th>
@@ -117,6 +182,7 @@ export default function TabelaCotacao(props) {
                   <td>
                     <input
                       type="checkbox"
+                      readOnly={props.isGerado}
                       onClick={e => props.mostraValor(cobertura)}
                     />
                   </td>
@@ -132,6 +198,15 @@ export default function TabelaCotacao(props) {
                 <>
                   <td>
                     <Input
+                      style={
+                        props.isGerado
+                          ? {
+                              background: "#eee",
+                              pointerEvents: "none",
+                              touchAction: "none"
+                            }
+                          : {}
+                      }
                       value={
                         cobertura.capital === 0
                           ? "0,00"
@@ -206,6 +281,6 @@ export default function TabelaCotacao(props) {
           ))}
         </tbody>
       </Table>
-    </div>
+    </>
   )
 }

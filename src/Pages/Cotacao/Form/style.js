@@ -63,7 +63,7 @@ export const InputReadOnly = styled.input`
 `
 export const Select = styled.select`
   display: block;
-  width: 75%;
+  width: 100%;
   height: 37px;
   padding: 6px 12px;
   font-size: 1rem;
@@ -77,44 +77,6 @@ export const Select = styled.select`
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 `
 
-export const Coluna = styled.div`
-  padding-right: 5px;
-  padding-left: 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: baseline;
-  margin-bottom: 16px;
-`
-
-export const Coluna2 = styled.div`
-  width: 16.66%;
-  padding-right: 5px;
-  padding-left: 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: baseline;
-  margin-bottom: 16px;
-`
-export const Coluna4 = styled.div`
-  width: 33.33%;
-  padding-right: 5px;
-  padding-left: 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: baseline;
-  margin-bottom: 16px;
-`
-
-export const Linha = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  margin-right: -5px;
-  margin-left: -5px;
-`
-
 export const Label = styled.label`
   display: inline-block;
   margin-bottom: 0.5rem;
@@ -124,6 +86,7 @@ export const Risco = styled.hr`
   ox-sizing: content-box;
   height: 0;
   overflow: visible;
+  margin-bottom: 30px;
 `
 export const CabecalhoForm = styled.h2`
   font-size: 2rem;
