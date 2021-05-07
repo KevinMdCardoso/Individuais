@@ -1,12 +1,13 @@
 import React from "react"
 import ReactDOM from "react-dom"
 import "./index.css"
-import { Link } from "react-router-dom"
+import { Provider } from "react-redux"
 import Routes from "./routes"
+import { Store } from "./store"
 
 ReactDOM.render(
-  <React.StrictMode>
+  <Provider store={Store}>
     <Routes />
-  </React.StrictMode>,
+  </Provider>,
   document.getElementById("root")
 )

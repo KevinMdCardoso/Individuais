@@ -22,6 +22,7 @@
       "react/self-closing-comp":"warn",
       "no-unused-vars":"warn",
       "react/no-unused-state":"warn",
+      "react/prop-types": "warn",
       "prettier/prettier": "warn",   
       "space-before-function-paren" : "off",
       "import/no-extraneous-dependencies": "off",
@@ -30,7 +31,7 @@
       "no-shadow": "off",
       "no-restricted-syntax": "off",
       "linebreak-style": "off",
-      "guard-for-in": "off",
+      "guard-for-in": "off",      
       "react/jsx-filename-extension": [0],
         "import/extensions": "off"
     }

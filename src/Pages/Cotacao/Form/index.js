@@ -1,28 +1,7 @@
 import React, { Component } from "react"
-// import Button from "@material-ui/core/Button"
 import "bootstrap/dist/css/bootstrap.min.css"
-import {
-  Container,
-  Row,
-  Col,
-  Form,
-  Button,
-  FormControl,
-  Media
-} from "react-bootstrap"
-import InputMask from "react-input-mask"
-import {
-  Body,
-  // Container,
-  Headers,
-  Input,
-  InputReadOnly,
-  Label,
-  Risco,
-  CabecalhoForm,
-  CabecalhoTipoPlano,
-  Select
-} from "./style"
+import { Container, Col, Form, Button } from "react-bootstrap"
+import { Risco, CabecalhoForm, CabecalhoTipoPlano, Select } from "./style"
 import TabelaCotacao from "../../../Components/TableCotacao"
 import TabelaTotalCotacao from "../../../Components/TabelaTotalCotacao"
 import Api from "../../../Services/api"
@@ -40,13 +19,13 @@ export default class cotacao extends Component {
       seguro: [],
       servico: [],
       selecionadoFuneral: 0,
-      cpfCliente: "86299719087",
-      nomeCliente: "KEVIN CARDOSO",
+      cpfCliente: "",
+      nomeCliente: "",
 
-      comisaoPeculio: 10,
-      agenciamentoPeculio: 100,
-      comisaoSeguro: 25,
-      agenciamentoSeguro: 150,
+      comisaoPeculio: 0,
+      agenciamentoPeculio: 0,
+      comisaoSeguro: 0,
+      agenciamentoSeguro: 0,
 
       codigoCorretor: "",
       nomeCorretor: "",
@@ -666,22 +645,20 @@ export default class cotacao extends Component {
       numeroCotacao
     } = this.state
 
-    const width = window.innerWidth
-
     const styles = {
-      container: isRowBased => ({
+      container: () => ({
         paddingTop: "15px",
         paddingLeft: "15px",
         paddingRight: "15px",
         marginRight: "auto",
-        marginReft: "auto"
+        marginLeft: "auto"
       })
     }
 
     return (
       <>
         <Container style={{ marginBottom: "20px" }}>
-          <Form style={styles.container(true)} className="body-content">
+          <Form style={styles.container()} className="body-content">
             <Form.Row>
               <Col md={4}>
                 <Form.Label>Buscar Cotação por Número</Form.Label>
